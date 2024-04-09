@@ -1,0 +1,29 @@
+shell="/bin/bash"
+
+[colors.bright]
+black = "0x666666"
+blue = "0x6666EE"
+cyan = "0x66FFFF"
+green = "0x66FF66"
+magenta = "0xFF66FF"
+red = "0xFF6666"
+white = "0xDDDDDD"
+yellow = "0xFFFF66"
+
+[colors.cursor]
+cursor = "0xFFFFFF"
+text = "0x000000"
+
+[colors.normal]
+black = "0x000000"
+blue = "0x6666FF"
+cyan = "0x00FFFF"
+green = "0x00FF00"
+magenta = "0xFF00FF"
+red = "0xFF0000"
+white = "0xFFFFFF"
+yellow = "0xFFFF00"
+
+[colors.primary]
+background = "0x303030"
+foreground = "0xFFFFFF"
