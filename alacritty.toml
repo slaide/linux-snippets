@@ -1,5 +1,8 @@
-shell="/bin/bash"
 live_config_reload = true
+
+[shell]
+program="/bin/bash"
+args=["-l"]
 
 [env]
 
