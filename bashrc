@@ -24,3 +24,9 @@ PROMPT_COMMAND=timer_stop
 
 # Define a custom Bash prompt with execution time and exit code
 PS1='\[\033[1;32m\]\u\[\033[00m\]:\[\033[1;34m\]\w \[\033[0m\]${timer_show}s $(if [ $? -eq 0 ]; then echo "\[\033[32m\]✔"; else echo "\[\033[31m\]✘($?)"; fi)\[\033[0m\] $ '
+
+p(){
+	python3 -c "print($1)"
+}
+
+export EDITOR="micro"

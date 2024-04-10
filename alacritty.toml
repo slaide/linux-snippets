@@ -1,4 +1,21 @@
 shell="/bin/bash"
+live_config_reload = true
+
+[env]
+
+[window]
+resize_increments=false
+decorations="Full"
+startup_mode="Maximized"
+title="terminal"
+dynamic_title=true
+
+[scrolling]
+history=100000
+multiplier=4
+
+[font]
+size=16
 
 [colors.bright]
 black = "0x666666"
