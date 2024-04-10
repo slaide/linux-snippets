@@ -2,9 +2,11 @@ live_config_reload = true
 
 [shell]
 program="/bin/bash"
+# run as login shell (which seems to be the default on linux, but not on macos)
 args=["-l"]
 
 [env]
+TERM="xterm-256color"
 
 [window]
 resize_increments=false
@@ -47,3 +49,14 @@ yellow = "0xFFFF00"
 [colors.primary]
 background = "0x000000"
 foreground = "0xFFFFFF"
+
+[terminal]
+osc52 = "CopyPaste"
+
+[keyboard]
+bindings=[
+	# for macos (overrides creating a new tab)
+	{key="T",mods="Command",action="CreateNewWindow"},
+	# for linux
+	{key="T",mods="Control|Shift",action="CreateNewWindow"},
+]

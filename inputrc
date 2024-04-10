@@ -1,0 +1,8 @@
+# map cmd+rightarrow on macos 14.4 bash alacritty
+";9C": forward-word
+# map cmd+leftarrow on macos 14.4 bash alacritty
+";9D": backward-word
+# map opt+rightarrow on macos 14.4 bash alacritty
+";3C": forward-word
+# map opt+leftarrow on macos 14.4 bash alacritty
+";3D": backward-word
