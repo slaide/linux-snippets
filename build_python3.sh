@@ -3,7 +3,7 @@
 START_WD=$(pwd)
 
 # Define the Python version (pick from https://www.python.org/downloads/)
-PYTHON_VERSION="3.10.14"
+PYTHON_VERSION="3.13.0"
 PYTHON_VERSION_NOPATCH=$(echo $PYTHON_VERSION | cut -d'.' -f1,2)
 
 # Define the installation directories
@@ -163,12 +163,6 @@ if [ ! -e $PYTHON_INSTALL_DIR ] ; then
 	echo "Python $PYTHON_VERSION installed successfully into $PYTHON_INSTALL_DIR"
 fi
 
-echo "Use 'source activate.sh' to activate this Python environment."
-
 # install package dependencies
 cd $SCRIPT_DIR
-source activate.sh
-python3 -m pip install --upgrade pip
-
-cd $SCRIPT_DIR/.. # project root dir
-python3 -m pip install -e .
+python-3*/bin/python3 -m pip install --upgrade pip
