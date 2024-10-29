@@ -1,8 +1,11 @@
+# from https://stackoverflow.com/questions/5029118/bash-ctrl-to-move-cursor-between-words-strings#5029155
+# the control sequence emitted by the terminal may differ, use ctrl+v then the key combination to see what is emitted (note that ^[ is written as \e in the mappings below)
+
 # map cmd+rightarrow on macos 14.4 bash alacritty
-";9C": forward-word
+"\e[1;9C": forward-word
 # map cmd+leftarrow on macos 14.4 bash alacritty
-";9D": backward-word
+"\e[1;9D": backward-word
 # map opt+rightarrow on macos 14.4 bash alacritty
-";3C": forward-word
+"\e[1;3C": forward-word
 # map opt+leftarrow on macos 14.4 bash alacritty
-";3D": backward-word
+"\e[1;3D": backward-word
