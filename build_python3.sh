@@ -6,6 +6,8 @@ START_WD=$(pwd)
 PYTHON_VERSION="3.13.0"
 PYTHON_VERSION_NOPATCH=$(echo $PYTHON_VERSION | cut -d'.' -f1,2)
 
+NUM_COMPILE_THREADS=$(( $(nproc) - 1 ))
+
 # Define the installation directories
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd $SCRIPT_DIR
@@ -34,7 +36,7 @@ if [ ! -e $TCL_INSTALL_DIR ] ; then
     tar -xzf tcl.tar.gz -C $TCL_SOURCE_DIR --strip-components=1
     cd $TCL_SOURCE_DIR/unix
     ./configure --prefix=$TCL_INSTALL_DIR
-    make -j
+    make -j$NUM_COMPILE_THREADS
     make install
     cd $SCRIPT_DIR
     rm -rf $TCL_SOURCE_DIR tcl.tar.gz
@@ -51,7 +53,7 @@ if [ ! -e $TK_INSTALL_DIR ] ; then
     export CFLAGS="-I$TCL_INSTALL_DIR/include"
     
     ./configure --prefix=$TK_INSTALL_DIR --with-tcl=$TCL_INSTALL_DIR/lib
-    make -j
+    make -j$NUM_COMPILE_THREADS
     make install
 
     unset CFLAGS
@@ -68,7 +70,7 @@ if [ ! -e $NCURSES_INSTALL_DIR ] ; then
     tar -xzf ncurses.tar.gz -C $NCURSES_SOURCE_DIR --strip-components=1
     cd $NCURSES_SOURCE_DIR
     ./configure --prefix=$NCURSES_INSTALL_DIR --with-shared --without-debug --enable-widec
-    make -j
+    make -j$NUM_COMPILE_THREADS
     make install
     cd $SCRIPT_DIR
     rm -rf $NCURSES_SOURCE_DIR ncurses.tar.gz
@@ -84,9 +86,9 @@ if [ ! -e $OPENSSL_INSTALL_DIR ] ; then
     cd $OPENSSL_SOURCE_DIR
     ./config --prefix=$OPENSSL_INSTALL_DIR --openssldir=$OPENSSL_INSTALL_DIR/ssl shared zlib
     make -j1 depend
-    make -j
+    make -j$NUM_COMPILE_THREADS
     # make -j test
-    make -j install_sw
+    make -j$NUM_COMPILE_THREADS install_sw
 
     # remove openssl source code files after installation
     cd $SCRIPT_DIR
@@ -102,8 +104,8 @@ if [ ! -e $XZ_INSTALL_DIR ] ; then
     tar -xzf xz.tar.gz -C $XZ_SOURCE_DIR --strip-components=1
     cd $XZ_SOURCE_DIR
     ./configure --prefix=$XZ_INSTALL_DIR
-    make -j
-    make -j install
+    make -j$NUM_COMPILE_THREADS
+    make -j$NUM_COMPILE_THREADS install
 
     # remove xz source code files after installation
     cd $SCRIPT_DIR
@@ -149,8 +151,8 @@ if [ ! -e $PYTHON_INSTALL_DIR ] ; then
 		cp config.log ..
 	fi
 	
-	make -j
-	make -j altinstall
+	make -j$NUM_COMPILE_THREADS
+	make -j$NUM_COMPILE_THREADS altinstall
 
 	# remove python source code files after installation
 	cd $SCRIPT_DIR
