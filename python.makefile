@@ -189,8 +189,9 @@ $(OPENSSL_SOURCE_DIR):$(OPENSSL_ARCHIVE_NAME)
 $(OPENSSL_INSTALL_DIR):$(OPENSSL_SOURCE_DIR)
 	mkdir -p $(OPENSSL_INSTALL_DIR) 
 
+	# must be shared
 	cd $(OPENSSL_SOURCE_DIR) && \
-	./config --prefix=$(OPENSSL_INSTALL_DIR) --openssldir=$(OPENSSL_INSTALL_DIR)/ssl shared zlib && \
+	./config --prefix=$(OPENSSL_INSTALL_DIR) --openssldir=$(OPENSSL_INSTALL_DIR)/ssl -shared -fPIC zlib && \
 	$(MAKE) depend && \
 	$(MAKE) && \
 	$(MAKE) install_sw
@@ -233,7 +234,7 @@ $(PYTHON_INSTALL_DIR):$(PYTHON_SOURCE_DIR) $(ALL_DEP_INSTALL_DIRS)
 export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:\
 $(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:\
 $(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig; \
-export LDFLAGS=" $$(pkg-config --libs   ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(LDFLAGS) " ; \
+export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs   ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(LDFLAGS) " ; \
 export CPPFLAGS=" $$(pkg-config --cflags ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(CPPFLAGS) " ; \
 cd $(PYTHON_SOURCE_DIR) && \
 ./configure \
