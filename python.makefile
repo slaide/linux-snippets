@@ -147,7 +147,7 @@ $(NCURSES_INSTALL_DIR):$(NCURSES_SOURCE_DIR)
 	mkdir -p $(NCURSES_INSTALL_DIR)
 
 	cd $(NCURSES_SOURCE_DIR) && \
-	./configure --prefix=$(NCURSES_INSTALL_DIR) --without-debug --with-termlib --enable-widec && \
+	./configure --prefix=$(NCURSES_INSTALL_DIR) --with-shared --without-normal --without-debug --with-termlib --enable-widec && \
 	$(MAKE) && \
 	$(MAKE) install
 
@@ -230,8 +230,8 @@ $(PYTHON_INSTALL_DIR):$(PYTHON_SOURCE_DIR) $(ALL_DEP_INSTALL_DIRS)
 	# -j1 altinstall -> avoid a race condition with duplicate mkdir
 
 	bash -c ' \
-export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(XZ_INSTALL_DIR)/lib/pkgconfig:\
-$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:\
+export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:\
+$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:\
 $(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig; \
 export LDFLAGS=" $$(pkg-config --libs   ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(LDFLAGS) " ; \
 export CPPFLAGS=" $$(pkg-config --cflags ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(CPPFLAGS) " ; \
