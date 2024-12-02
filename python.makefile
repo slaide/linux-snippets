@@ -328,3 +328,4 @@ $(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$'''+'''@'''; f=open(
 
 	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
 	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
+	chmod +x $(PYTHON_INSTALL_DIR)/bin/python3
