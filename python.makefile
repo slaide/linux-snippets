@@ -65,10 +65,24 @@ ICU_INSTALL_DIR=$(SCRIPT_DIR)/icu-$(ICU_VERSION)
 ICU_SOURCE_DIR=$(ICU_INSTALL_DIR)-src
 ICU_ARCHIVE_NAME=icu-$(ICU_VERSION).tgz
 
-ALL_SOURCE_DIRS=$(ICU_SOURCE_DIR) $(READLINE_SOURCE_DIR) $(TCL_SOURCE_DIR) $(TK_SOURCE_DIR) $(NCURSES_SOURCE_DIR) $(XZ_SOURCE_DIR) $(OPENSSL_SOURCE_DIR)
-ALL_ARCHIVES=$(ICU_ARCHIVE_NAME) $(READLINE_ARCHIVE_NAME) $(TCL_ARCHIVE_NAME) $(TK_ARCHIVE_NAME) $(NCURSES_ARCHIVE_NAME) $(XZ_ARCHIVE_NAME) $(OPENSSL_ARCHIVE_NAME) $(PYTHON_ARCHIVE_NAME)
+GETTEXT_VERSION?=0.22.5
+GETTEXT_INSTALL_DIR=$(SCRIPT_DIR)/gettext-$(GETTEXT_VERSION)
+GETTEXT_SOURCE_DIR=$(GETTEXT_INSTALL_DIR)-src
+GETTEXT_ARCHIVE_NAME=gettext-$(GETTEXT_VERSION).tgz
 
-ALL_DEP_INSTALL_DIRS=$(ICU_INSTALL_DIR) $(READLINE_INSTALL_DIR) $(TCL_INSTALL_DIR) $(TK_INSTALL_DIR) $(NCURSES_INSTALL_DIR) $(XZ_INSTALL_DIR) $(OPENSSL_INSTALL_DIR)
+ICONV_VERSION?=1.17
+ICONV_INSTALL_DIR=$(SCRIPT_DIR)/iconv-$(ICONV_VERSION)
+ICONV_SOURCE_DIR=$(ICONV_INSTALL_DIR)-src
+ICONV_ARCHIVE_NAME=iconv-$(ICONV_VERSION).tgz
+
+ALL_SOURCE_DIRS=$(ICONV_SOURCE_DIR) $(ICU_SOURCE_DIR) $(READLINE_SOURCE_DIR) $(TCL_SOURCE_DIR) $(TK_SOURCE_DIR) $(NCURSES_SOURCE_DIR) $(XZ_SOURCE_DIR) $(OPENSSL_SOURCE_DIR) $(GETTEXT_VERSION)
+ALL_ARCHIVES=$(ICONV_ARCHIVE_NAME) $(ICU_ARCHIVE_NAME) $(READLINE_ARCHIVE_NAME) $(TCL_ARCHIVE_NAME) $(TK_ARCHIVE_NAME) $(NCURSES_ARCHIVE_NAME) $(XZ_ARCHIVE_NAME) $(OPENSSL_ARCHIVE_NAME) $(PYTHON_ARCHIVE_NAME) $(GETTEXT_ARCHIVE_NAME)
+
+ALL_DEP_INSTALL_DIRS=$(ICU_INSTALL_DIR) $(READLINE_INSTALL_DIR) $(TCL_INSTALL_DIR) $(TK_INSTALL_DIR) $(NCURSES_INSTALL_DIR) $(XZ_INSTALL_DIR) $(OPENSSL_INSTALL_DIR) $(GETTEXT_INSTALL_DIR) $(ICONV_INSTALL_DIR)
+
+PKGNAMES=ncurses termcap openssl liblzma readline tcl tk icu-i18n gettext iconv
+
+PKG_CONFIG_PATHS=$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:$(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig:$(GETTEXT_INSTALL_DIR)/lib/pkgconfig:$(ICONV_INSTALL_DIR)/lib/pkgconfig
 
 .PHONY:all
 all: $(ALL_DEP_INSTALL_DIRS) $(PYTHON_INSTALL_DIR)
@@ -76,6 +90,66 @@ all: $(ALL_DEP_INSTALL_DIRS) $(PYTHON_INSTALL_DIR)
 .PHONY:clean
 clean:
 	rm -rf $(ALL_DEP_INSTALL_DIRS) $(PYTHON_INSTALL_DIR) $(ALL_ARCHIVES) $(ALL_SOURCE_DIRS)
+
+$(ICONV_ARCHIVE_NAME):
+	$(DL_CMD) -o $(ICONV_ARCHIVE_NAME) "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(ICONV_VERSION).tar.gz"
+$(ICONV_SOURCE_DIR):$(ICONV_ARCHIVE_NAME)
+	mkdir -p $(ICONV_SOURCE_DIR)
+	tar -xzf $(ICONV_ARCHIVE_NAME) -C $(ICONV_SOURCE_DIR) --strip-components=1
+$(ICONV_INSTALL_DIR):$(ICONV_SOURCE_DIR)
+	mkdir -p $(ICONV_INSTALL_DIR)
+
+	cd $(ICONV_SOURCE_DIR) && \
+	./configure --prefix=$(ICONV_INSTALL_DIR) && \
+	$(MAKE) && \
+	$(MAKE) install
+	
+	( \
+	if [ ! -e $(ICONV_INSTALL_DIR)/lib/pkgconfig ]; then \
+		mkdir -p $(ICONV_INSTALL_DIR)/lib/pkgconfig; \
+		echo 'prefix=$(ICONV_INSTALL_DIR)\n\
+exec_prefix=$${prefix}\n\
+libdir=$${exec_prefix}/lib\n\
+includedir=$${prefix}/include\n\
+\n\
+Name: iconv\n\
+Description: iconv library\n\
+Version: $(ICONV_VERSION)\n\
+Libs: -L$${libdir} -liconv -lcharset \n\
+Cflags: -I$${includedir}\n\
+' > $(ICONV_INSTALL_DIR)/lib/pkgconfig/iconv.pc; \
+	fi \
+	)
+
+$(GETTEXT_ARCHIVE_NAME):
+	$(DL_CMD) -o $(GETTEXT_ARCHIVE_NAME) "https://ftp.gnu.org/pub/gnu/gettext/gettext-$(GETTEXT_VERSION).tar.xz"
+$(GETTEXT_SOURCE_DIR):$(GETTEXT_ARCHIVE_NAME)
+	mkdir -p $(GETTEXT_SOURCE_DIR)
+	tar -xzf $(GETTEXT_ARCHIVE_NAME) -C $(GETTEXT_SOURCE_DIR) --strip-components=1
+$(GETTEXT_INSTALL_DIR):$(GETTEXT_SOURCE_DIR)
+	mkdir -p $(GETTEXT_INSTALL_DIR)
+
+	cd $(GETTEXT_SOURCE_DIR) && \
+	./configure --prefix=$(GETTEXT_INSTALL_DIR) && \
+	$(MAKE) && \
+	$(MAKE) install
+
+	( \
+	if [ ! -e $(GETTEXT_INSTALL_DIR)/lib/pkgconfig ]; then \
+		mkdir -p $(GETTEXT_INSTALL_DIR)/lib/pkgconfig; \
+		echo 'prefix=$(GETTEXT_INSTALL_DIR)\n\
+exec_prefix=$${prefix}\n\
+libdir=$${exec_prefix}/lib\n\
+includedir=$${prefix}/include\n\
+\n\
+Name: gettext\n\
+Description: gettext library\n\
+Version: $(GETTEXT_VERSION)\n\
+Libs: -L$${libdir} -lintl -lasprintf -lgettextpo -ltextstyle \n\
+Cflags: -I$${includedir}\n\
+' > $(GETTEXT_INSTALL_DIR)/lib/pkgconfig/gettext.pc; \
+	fi \
+	)
 
 $(ICU_ARCHIVE_NAME):
 	$(DL_CMD) -o $(ICU_ARCHIVE_NAME) "https://github.com/unicode-org/icu/releases/download/release-$(subst .,-,$(ICU_VERSION))/icu4c-$(subst .,_,$(ICU_VERSION))-src.tgz"
@@ -231,11 +305,9 @@ $(PYTHON_INSTALL_DIR):$(PYTHON_SOURCE_DIR) $(ALL_DEP_INSTALL_DIRS)
 	# -j1 altinstall -> avoid a race condition with duplicate mkdir
 
 	bash -c ' \
-export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:\
-$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:\
-$(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig; \
-export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs   ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(LDFLAGS) " ; \
-export CPPFLAGS=" $$(pkg-config --cflags ncurses termcap openssl liblzma readline tcl tk icu-i18n) $(CPPFLAGS) " ; \
+export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_PATHS); \
+export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs $(PKGNAMES) ) $(LDFLAGS) " ; \
+export CPPFLAGS=" $$(pkg-config --cflags $(PKGNAMES) ) $(CPPFLAGS) " ; \
 cd $(PYTHON_SOURCE_DIR) && \
 ./configure \
 	--with-openssl="$(OPENSSL_INSTALL_DIR)" \
