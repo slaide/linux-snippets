@@ -85,7 +85,7 @@ PKGNAMES=ncurses termcap openssl liblzma readline tcl tk icu-i18n gettext iconv
 PKG_CONFIG_PATHS=$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:$(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig:$(GETTEXT_INSTALL_DIR)/lib/pkgconfig:$(ICONV_INSTALL_DIR)/lib/pkgconfig
 
 .PHONY:all
-all: $(ALL_DEP_INSTALL_DIRS) $(PYTHON_INSTALL_DIR)
+all: $(ALL_DEP_INSTALL_DIRS) $(PYTHON_INSTALL_DIR)/bin/python3
 
 .PHONY:clean
 clean:
@@ -321,11 +321,12 @@ cd $(PYTHON_SOURCE_DIR) && \
 $(MAKE) && \
 $(MAKE) -j1 altinstall'
 
-	python3 -c "s='''#!/usr/bin/env bash \n\
-export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH) \n\
-export PYTHONHOME=$(PYTHON_INSTALL_DIR) \n\
-$(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$'''+'''@'''; f=open('$(PYTHON_INSTALL_DIR)/bin/python3', 'x'); f.write(s); f.close()"
-
+$(PYTHON_INSTALL_DIR)/bin/python3: $(PYTHON_INSTALL_DIR)
+	echo "s='''#!/usr/bin/env bash \n \
+export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH) \n \
+export PYTHONHOME=$(PYTHON_INSTALL_DIR) \n \
+export cmd=$$(echo import certifi\;print\(certifi.where\(\)\) | python3 -) \n \
+$(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$'''+'''@'''; f=open('$(PYTHON_INSTALL_DIR)/bin/python3', 'x'); f.write(s); f.close()" | python3 -
 	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
 	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
 	chmod +x $(PYTHON_INSTALL_DIR)/bin/python3
