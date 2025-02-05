@@ -327,6 +327,8 @@ export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH) \n \
 export PYTHONHOME=$(PYTHON_INSTALL_DIR) \n \
 export SSL_CERT_FILE=$$(echo import certifi\;print\(certifi.where\(\)\) | python3 -) \n \
 $(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$'''+'''@'''; f=open('$(PYTHON_INSTALL_DIR)/bin/python3', 'x'); f.write(s); f.close()" | python3 -
-	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
-	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
 	chmod +x $(PYTHON_INSTALL_DIR)/bin/python3
+	# these commands will print errors about not finding certifi, which is fine
+	$(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
+	$(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
+	$(PYTHON_INSTALL_DIR)/bin/python3 -m pip install certifi
