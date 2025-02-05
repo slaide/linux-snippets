@@ -80,7 +80,7 @@ ALL_ARCHIVES=$(ICONV_ARCHIVE_NAME) $(ICU_ARCHIVE_NAME) $(READLINE_ARCHIVE_NAME) 
 
 ALL_DEP_INSTALL_DIRS=$(ICU_INSTALL_DIR) $(READLINE_INSTALL_DIR) $(TCL_INSTALL_DIR) $(TK_INSTALL_DIR) $(NCURSES_INSTALL_DIR) $(XZ_INSTALL_DIR) $(OPENSSL_INSTALL_DIR) $(GETTEXT_INSTALL_DIR) $(ICONV_INSTALL_DIR)
 
-PKGNAMES=ncurses termcap openssl liblzma readline tcl tk icu-i18n gettext iconv
+PKGNAMES=ncurses ncursesw termcap openssl liblzma readline tcl tk icu-i18n gettext iconv
 
 PKG_CONFIG_PATHS=$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:$(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig:$(GETTEXT_INSTALL_DIR)/lib/pkgconfig:$(ICONV_INSTALL_DIR)/lib/pkgconfig
 
@@ -238,8 +238,8 @@ includedir=$${prefix}/include\n\
 Name: ncurses\n\
 Description: ncurses library\n\
 Version: $(NCURSES_VERSION)\n\
-Libs: -L$${libdir} -lncursesw -ltinfow \n\
-Cflags: -I$${includedir}\n\
+Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir} \n\
+Cflags: -I$${includedir} -I$${includedir}/ncursesw \n\
 ' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/ncurses.pc; \
 		echo 'prefix=$(NCURSES_INSTALL_DIR)\n\
 exec_prefix=$${prefix}\n\
@@ -249,8 +249,8 @@ includedir=$${prefix}/include\n\
 Name: termcap\n\
 Description: termcap library\n\
 Version: $(NCURSES_VERSION)\n\
-Libs: -L$${libdir} -lncursesw -ltinfow \n\
-Cflags: -I$${includedir}\n\
+Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir} \n\
+Cflags: -I$${includedir} -I$${includedir}/ncursesw \n\
 ' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/termcap.pc; \
 	fi \
 	)
@@ -265,7 +265,7 @@ $(OPENSSL_INSTALL_DIR):$(OPENSSL_SOURCE_DIR)
 
 	# must be shared
 	cd $(OPENSSL_SOURCE_DIR) && \
-	./config --prefix=$(OPENSSL_INSTALL_DIR) --openssldir=$(OPENSSL_INSTALL_DIR)/ssl -shared -fPIC zlib && \
+	./config --prefix="$(OPENSSL_INSTALL_DIR)" --openssldir="$(OPENSSL_INSTALL_DIR)/ssl" -shared -fPIC zlib && \
 	$(MAKE) depend && \
 	$(MAKE) && \
 	$(MAKE) install_sw
