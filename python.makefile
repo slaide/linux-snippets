@@ -1,7 +1,10 @@
+
 #!/usr/bin/env make
 
 # Define the Python version (pick from https://www.python.org/downloads/)
 # tested with: 3.9.20, 3.10.14, 3.10.15, 3.11.10, 3.12.7, 3.13.0
+
+SHELL=bash
 
 PYTHON_VERSION?=3.13.0
 
@@ -96,7 +99,7 @@ $(ICONV_ARCHIVE_NAME):
 $(ICONV_SOURCE_DIR):$(ICONV_ARCHIVE_NAME)
 	mkdir -p $(ICONV_SOURCE_DIR)
 	tar -xzf $(ICONV_ARCHIVE_NAME) -C $(ICONV_SOURCE_DIR) --strip-components=1
-$(ICONV_INSTALL_DIR):$(ICONV_SOURCE_DIR)
+$(ICONV_INSTALL_DIR): | $(ICONV_SOURCE_DIR)
 	mkdir -p $(ICONV_INSTALL_DIR)
 
 	cd $(ICONV_SOURCE_DIR) && \
@@ -126,7 +129,7 @@ $(GETTEXT_ARCHIVE_NAME):
 $(GETTEXT_SOURCE_DIR):$(GETTEXT_ARCHIVE_NAME)
 	mkdir -p $(GETTEXT_SOURCE_DIR)
 	tar -xzf $(GETTEXT_ARCHIVE_NAME) -C $(GETTEXT_SOURCE_DIR) --strip-components=1
-$(GETTEXT_INSTALL_DIR):$(GETTEXT_SOURCE_DIR)
+$(GETTEXT_INSTALL_DIR): | $(GETTEXT_SOURCE_DIR)
 	mkdir -p $(GETTEXT_INSTALL_DIR)
 
 	cd $(GETTEXT_SOURCE_DIR) && \
@@ -156,7 +159,7 @@ $(ICU_ARCHIVE_NAME):
 $(ICU_SOURCE_DIR):$(ICU_ARCHIVE_NAME)
 	mkdir -p $(ICU_SOURCE_DIR)
 	tar -xzf $(ICU_ARCHIVE_NAME) -C $(ICU_SOURCE_DIR) --strip-components=1
-$(ICU_INSTALL_DIR):$(ICU_SOURCE_DIR)
+$(ICU_INSTALL_DIR): | $(ICU_SOURCE_DIR)
 	mkdir -p $(ICU_INSTALL_DIR)
 
 	cd $(ICU_SOURCE_DIR)/source && \
@@ -169,7 +172,7 @@ $(READLINE_ARCHIVE_NAME):
 $(READLINE_SOURCE_DIR): $(READLINE_ARCHIVE_NAME)
 	mkdir -p $(READLINE_SOURCE_DIR)
 	tar -xzf $(READLINE_ARCHIVE_NAME) -C $(READLINE_SOURCE_DIR) --strip-components=1
-$(READLINE_INSTALL_DIR): $(READLINE_SOURCE_DIR)
+$(READLINE_INSTALL_DIR): | $(READLINE_SOURCE_DIR)
 	mkdir -p $(READLINE_INSTALL_DIR)
 
 	cd $(READLINE_SOURCE_DIR) && \
@@ -182,7 +185,7 @@ $(TCL_ARCHIVE_NAME):
 $(TCL_SOURCE_DIR):$(TCL_ARCHIVE_NAME)
 	mkdir -p $(TCL_SOURCE_DIR)
 	tar -xzf $(TCL_ARCHIVE_NAME) -C $(TCL_SOURCE_DIR) --strip-components=1
-$(TCL_INSTALL_DIR):$(TCL_SOURCE_DIR)
+$(TCL_INSTALL_DIR): | $(TCL_SOURCE_DIR)
 	mkdir -p $(TCL_INSTALL_DIR)
 
 	cd $(TCL_SOURCE_DIR)/unix && \
@@ -195,7 +198,7 @@ $(TK_ARCHIVE_NAME):
 $(TK_SOURCE_DIR):$(TK_ARCHIVE_NAME)
 	mkdir -p $(TK_SOURCE_DIR)
 	tar -xzf $(TK_ARCHIVE_NAME) -C $(TK_SOURCE_DIR) --strip-components=1
-$(TK_INSTALL_DIR):$(TCL_INSTALL_DIR) $(TK_SOURCE_DIR)
+$(TK_INSTALL_DIR):$(TCL_INSTALL_DIR) | $(TK_SOURCE_DIR)
 	mkdir -p $(TK_INSTALL_DIR)
 
 	( \
@@ -217,7 +220,7 @@ $(NCURSES_ARCHIVE_NAME):
 $(NCURSES_SOURCE_DIR):$(NCURSES_ARCHIVE_NAME)
 	mkdir -p $(NCURSES_SOURCE_DIR)
 	tar -xzf $(NCURSES_ARCHIVE_NAME) -C $(NCURSES_SOURCE_DIR) --strip-components=1
-$(NCURSES_INSTALL_DIR):$(NCURSES_SOURCE_DIR)
+$(NCURSES_INSTALL_DIR): | $(NCURSES_SOURCE_DIR)
 	mkdir -p $(NCURSES_INSTALL_DIR)
 
 	cd $(NCURSES_SOURCE_DIR) && \
@@ -260,7 +263,7 @@ $(OPENSSL_ARCHIVE_NAME):
 $(OPENSSL_SOURCE_DIR):$(OPENSSL_ARCHIVE_NAME)
 	mkdir -p $(OPENSSL_SOURCE_DIR)
 	tar -xzf $(OPENSSL_ARCHIVE_NAME) -C $(OPENSSL_SOURCE_DIR) --strip-components=1
-$(OPENSSL_INSTALL_DIR):$(OPENSSL_SOURCE_DIR)
+$(OPENSSL_INSTALL_DIR): | $(OPENSSL_SOURCE_DIR)
 	mkdir -p $(OPENSSL_INSTALL_DIR) 
 
 	# must be shared
@@ -271,13 +274,12 @@ $(OPENSSL_INSTALL_DIR):$(OPENSSL_SOURCE_DIR)
 	$(MAKE) install_sw
 
 $(XZ_ARCHIVE_NAME):
-	$(DL_CMD) -o $(XZ_ARCHIVE_NAME) "https://github.com/tukaani-project/xz/releases/download/v$(XZ_VERSION)/xz-$(XZ_VERSION).tar.gz"
-$(XZ_INSTALL_DIR):$(XZ_ARCHIVE_NAME)
 	# download and compile xz to provide lzma support for python
-	
+	$(DL_CMD) -o $(XZ_ARCHIVE_NAME) "https://github.com/tukaani-project/xz/releases/download/v$(XZ_VERSION)/xz-$(XZ_VERSION).tar.gz"
+$(XZ_SOURCE_DIR):$(XZ_ARCHIVE_NAME)
 	mkdir -p $(XZ_INSTALL_DIR) $(XZ_SOURCE_DIR)
 	tar -xzf $(XZ_ARCHIVE_NAME) -C $(XZ_SOURCE_DIR) --strip-components=1
-
+$(XZ_INSTALL_DIR): | $(XZ_SOURCE_DIR)
 	cd $(XZ_SOURCE_DIR) && \
 	./configure --prefix=$(XZ_INSTALL_DIR) && \
 	$(MAKE) && \
@@ -291,7 +293,7 @@ $(PYTHON_SOURCE_DIR):$(PYTHON_ARCHIVE_NAME)
 	
 	# remove tests, which are unused
 	cd $(PYTHON_SOURCE_DIR) && rm -rf Lib/test
-$(PYTHON_INSTALL_DIR):$(PYTHON_SOURCE_DIR) $(ALL_DEP_INSTALL_DIRS)
+$(PYTHON_INSTALL_DIR):$(ALL_DEP_INSTALL_DIRS) | $(PYTHON_SOURCE_DIR)
 	mkdir -p $(PYTHON_INSTALL_DIR)
 
 	# Configure and make
@@ -321,14 +323,18 @@ cd $(PYTHON_SOURCE_DIR) && \
 $(MAKE) && \
 $(MAKE) -j1 altinstall'
 
+.ONESHELL:
 $(PYTHON_INSTALL_DIR)/bin/python3: $(PYTHON_INSTALL_DIR)
-	echo "s='''#!/usr/bin/env bash \n \
-export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH) \n \
-export PYTHONHOME=$(PYTHON_INSTALL_DIR) \n \
-export SSL_CERT_FILE=$$(echo import certifi\;print\(certifi.where\(\)\) | python3 -) \n \
-$(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$'''+'''@'''; f=open('$(PYTHON_INSTALL_DIR)/bin/python3', 'x'); f.write(s); f.close()" | python3 -
+	cat <<- 'EOF' > $(PYTHON_INSTALL_DIR)/bin/python3
+	#!/usr/bin/env bash
+	export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH)
+	export PYTHONHOME=$(PYTHON_INSTALL_DIR)
+	export SSL_CERT_FILE=$$(echo "import certifi;print(certifi.where())" | $(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) -)
+	$(PYTHON_INSTALL_DIR)/bin/python$(PYTHON_VERSION_NOPATCH) $$@
+	EOF
+
 	chmod +x $(PYTHON_INSTALL_DIR)/bin/python3
 	# these commands will print errors about not finding certifi, which is fine
-	$(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
-	$(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
-	$(PYTHON_INSTALL_DIR)/bin/python3 -m pip install certifi
+	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m ensurepip
+	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m pip install --upgrade pip
+	bash $(PYTHON_INSTALL_DIR)/bin/python3 -m pip install certifi
