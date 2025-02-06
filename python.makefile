@@ -220,43 +220,44 @@ $(NCURSES_ARCHIVE_NAME):
 $(NCURSES_SOURCE_DIR):$(NCURSES_ARCHIVE_NAME)
 	mkdir -p $(NCURSES_SOURCE_DIR)
 	tar -xzf $(NCURSES_ARCHIVE_NAME) -C $(NCURSES_SOURCE_DIR) --strip-components=1
+.ONESHELL:
 $(NCURSES_INSTALL_DIR): | $(NCURSES_SOURCE_DIR)
 	mkdir -p $(NCURSES_INSTALL_DIR)
 
-	cd $(NCURSES_SOURCE_DIR) && \
-	./configure --prefix=$(NCURSES_INSTALL_DIR) --with-shared --without-normal --without-debug --with-termlib --enable-widec && \
-	$(MAKE) && \
+	cd $(NCURSES_SOURCE_DIR)
+	./configure --prefix=$(NCURSES_INSTALL_DIR) --with-shared --without-normal --without-debug --with-termlib --enable-widec
+	$(MAKE)
 	$(MAKE) install
 
 	# no -lpanelw -> causes terminal misconfiguration in python configure
 
-	( \
-	if [ ! -e $(NCURSES_INSTALL_DIR)/lib/pkgconfig ]; then \
-		mkdir -p $(NCURSES_INSTALL_DIR)/lib/pkgconfig; \
-		echo 'prefix=$(NCURSES_INSTALL_DIR)\n\
-exec_prefix=$${prefix}\n\
-libdir=$${exec_prefix}/lib\n\
-includedir=$${prefix}/include\n\
-\n\
-Name: ncurses\n\
-Description: ncurses library\n\
-Version: $(NCURSES_VERSION)\n\
-Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir} \n\
-Cflags: -I$${includedir} -I$${includedir}/ncursesw \n\
-' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/ncurses.pc; \
-		echo 'prefix=$(NCURSES_INSTALL_DIR)\n\
-exec_prefix=$${prefix}\n\
-libdir=$${exec_prefix}/lib\n\
-includedir=$${prefix}/include\n\
-\n\
-Name: termcap\n\
-Description: termcap library\n\
-Version: $(NCURSES_VERSION)\n\
-Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir} \n\
-Cflags: -I$${includedir} -I$${includedir}/ncursesw \n\
-' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/termcap.pc; \
-	fi \
-	)
+	mkdir -p $(NCURSES_INSTALL_DIR)/lib/pkgconfig
+
+	echo << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/ncurses.pc
+	prefix=$(NCURSES_INSTALL_DIR)
+	exec_prefix=$${prefix}
+	libdir=$${exec_prefix}/lib
+	includedir=$${prefix}/include
+	
+	Name: ncurses
+	Description: ncurses library
+	Version: $(NCURSES_VERSION)
+	Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir}
+	Cflags: -I$${includedir} -I$${includedir}/ncursesw
+	EOF
+
+	echo << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/termcap.pc
+	prefix=$(NCURSES_INSTALL_DIR)
+	exec_prefix=$${prefix}
+	libdir=$${exec_prefix}/lib
+	includedir=$${prefix}/include
+	
+	Name: termcap
+	Description: termcap library
+	Version: $(NCURSES_VERSION)
+	Libs: -L$${libdir} -lncursesw -ltinfow -Wl,-rpath,$${libdir}
+	Cflags: -I$${includedir} -I$${includedir}/ncursesw
+	EOF
 
 $(OPENSSL_ARCHIVE_NAME):
 	$(DL_CMD) -o $(OPENSSL_ARCHIVE_NAME) "https://www.openssl.org/source/openssl-$(OPENSSL_VERSION).tar.gz"
@@ -293,6 +294,9 @@ $(PYTHON_SOURCE_DIR):$(PYTHON_ARCHIVE_NAME)
 	
 	# remove tests, which are unused
 	cd $(PYTHON_SOURCE_DIR) && rm -rf Lib/test
+
+# ONESHELL to use cd
+.ONESHELL:
 $(PYTHON_INSTALL_DIR):$(ALL_DEP_INSTALL_DIRS) | $(PYTHON_SOURCE_DIR)
 	mkdir -p $(PYTHON_INSTALL_DIR)
 
@@ -304,28 +308,30 @@ $(PYTHON_INSTALL_DIR):$(ALL_DEP_INSTALL_DIRS) | $(PYTHON_SOURCE_DIR)
 	# + also apply several optimizations to improve runtime performance (no --enable-optimizations flag \
 	# because pgo generates wrong raw profile data, error: "version=8 instead of expected 9" ?!)
 
+	export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_PATHS)
+	export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs $(PKGNAMES) ) $(LDFLAGS) "
+	export CPPFLAGS=" $$(pkg-config --cflags $(PKGNAMES) ) $(CPPFLAGS) "
+	cd $(PYTHON_SOURCE_DIR)
+	./configure \
+		--with-openssl="$(OPENSSL_INSTALL_DIR)" \
+		--with-readline=readline --with-readline-dir="$(READLINE_INSTALL_DIR)" \
+		--with-tcltk-includes="-I$(TCL_INSTALL_DIR)/include -I$(TK_INSTALL_DIR)/include" \
+		--with-tcltk-libs="-L$(TCL_INSTALL_DIR)/lib -ltcl$(TCL_VERSION_NOPATCH) -L$(TK_INSTALL_DIR)/lib -ltk$(TK_VERSION_NOPATCH)" \
+		--with-icu="$(ICU_INSTALL_DIR)" \
+		--prefix="$(PYTHON_INSTALL_DIR)" \
+		--with-lto --with-computed-gotos \
+		--with-ensurepip $(PYTHON_CONFIGURE_FLAGS)
+	$(MAKE)
 	# -j1 altinstall -> avoid a race condition with duplicate mkdir
-
-	bash -c ' \
-export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_PATHS); \
-export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs $(PKGNAMES) ) $(LDFLAGS) " ; \
-export CPPFLAGS=" $$(pkg-config --cflags $(PKGNAMES) ) $(CPPFLAGS) " ; \
-cd $(PYTHON_SOURCE_DIR) && \
-./configure \
-	--with-openssl="$(OPENSSL_INSTALL_DIR)" \
-	--with-readline=readline --with-readline-dir="$(READLINE_INSTALL_DIR)" \
-	--with-tcltk-includes="-I$(TCL_INSTALL_DIR)/include -I$(TK_INSTALL_DIR)/include" \
-	--with-tcltk-libs="-L$(TCL_INSTALL_DIR)/lib -ltcl$(TCL_VERSION_NOPATCH) -L$(TK_INSTALL_DIR)/lib -ltk$(TK_VERSION_NOPATCH)" \
-	--with-icu="$(ICU_INSTALL_DIR)" \
-	--prefix="$(PYTHON_INSTALL_DIR)" \
-	--with-lto --with-computed-gotos \
-	--with-ensurepip $(PYTHON_CONFIGURE_FLAGS) && \
-$(MAKE) && \
-$(MAKE) -j1 altinstall'
+	$(MAKE) -j1 altinstall
 
 .ONESHELL:
 $(PYTHON_INSTALL_DIR)/bin/python3: $(PYTHON_INSTALL_DIR)
-	cat <<- 'EOF' > $(PYTHON_INSTALL_DIR)/bin/python3
+	# couple tricks:
+	# 1) ONESHELL to enable multiline heredoc
+	# 2) cat heredoc into output file
+	# 3) EOF in quotation marks to use the heredoc as string, instead of executing it
+	cat << 'EOF' > $(PYTHON_INSTALL_DIR)/bin/python3
 	#!/usr/bin/env bash
 	export PYTHONPATH=$(PYTHON_INSTALL_DIR)/lib/python$(PYTHON_VERSION_NOPATCH)
 	export PYTHONHOME=$(PYTHON_INSTALL_DIR)
