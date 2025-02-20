@@ -233,7 +233,7 @@ $(NCURSES_INSTALL_DIR): | $(NCURSES_SOURCE_DIR)
 
 	mkdir -p $(NCURSES_INSTALL_DIR)/lib/pkgconfig
 
-	echo << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/ncurses.pc
+	cat << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/ncurses.pc
 	prefix=$(NCURSES_INSTALL_DIR)
 	exec_prefix=$${prefix}
 	libdir=$${exec_prefix}/lib
@@ -246,7 +246,7 @@ $(NCURSES_INSTALL_DIR): | $(NCURSES_SOURCE_DIR)
 	Cflags: -I$${includedir} -I$${includedir}/ncursesw
 	EOF
 
-	echo << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/termcap.pc
+	cat << 'EOF' > $(NCURSES_INSTALL_DIR)/lib/pkgconfig/termcap.pc
 	prefix=$(NCURSES_INSTALL_DIR)
 	exec_prefix=$${prefix}
 	libdir=$${exec_prefix}/lib
