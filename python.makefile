@@ -71,7 +71,7 @@ ICU_ARCHIVE_NAME=icu-$(ICU_VERSION).tgz
 GETTEXT_VERSION?=0.22.5
 GETTEXT_INSTALL_DIR=$(SCRIPT_DIR)/gettext-$(GETTEXT_VERSION)
 GETTEXT_SOURCE_DIR=$(GETTEXT_INSTALL_DIR)-src
-GETTEXT_ARCHIVE_NAME=gettext-$(GETTEXT_VERSION).tgz
+GETTEXT_ARCHIVE_NAME=gettext-$(GETTEXT_VERSION).tar.xz
 
 ICONV_VERSION?=1.17
 ICONV_INSTALL_DIR=$(SCRIPT_DIR)/iconv-$(ICONV_VERSION)
@@ -83,7 +83,7 @@ ALL_ARCHIVES=$(ICONV_ARCHIVE_NAME) $(ICU_ARCHIVE_NAME) $(READLINE_ARCHIVE_NAME) 
 
 ALL_DEP_INSTALL_DIRS=$(ICU_INSTALL_DIR) $(READLINE_INSTALL_DIR) $(TCL_INSTALL_DIR) $(TK_INSTALL_DIR) $(NCURSES_INSTALL_DIR) $(XZ_INSTALL_DIR) $(OPENSSL_INSTALL_DIR) $(GETTEXT_INSTALL_DIR) $(ICONV_INSTALL_DIR)
 
-PKGNAMES=ncurses ncursesw termcap openssl liblzma readline tcl tk icu-i18n gettext iconv
+PKGNAMES=ncurses ncursesw termcap openssl libssl liblzma readline tcl tk icu-i18n gettext iconv
 
 PKG_CONFIG_PATHS=$(OPENSSL_INSTALL_DIR)/lib/pkgconfig:$(OPENSSL_INSTALL_DIR)/lib64/pkgconfig:$(XZ_INSTALL_DIR)/lib/pkgconfig:$(READLINE_INSTALL_DIR)/lib/pkgconfig:$(TCL_INSTALL_DIR)/lib/pkgconfig:$(TK_INSTALL_DIR)/lib/pkgconfig:$(NCURSES_INSTALL_DIR)/lib/pkgconfig:$(ICU_INSTALL_DIR)/lib/pkgconfig:$(GETTEXT_INSTALL_DIR)/lib/pkgconfig:$(ICONV_INSTALL_DIR)/lib/pkgconfig
 
@@ -99,60 +99,58 @@ $(ICONV_ARCHIVE_NAME):
 $(ICONV_SOURCE_DIR):$(ICONV_ARCHIVE_NAME)
 	mkdir -p $(ICONV_SOURCE_DIR)
 	tar -xzf $(ICONV_ARCHIVE_NAME) -C $(ICONV_SOURCE_DIR) --strip-components=1
+.ONESHELL:
 $(ICONV_INSTALL_DIR): | $(ICONV_SOURCE_DIR)
 	mkdir -p $(ICONV_INSTALL_DIR)
 
-	cd $(ICONV_SOURCE_DIR) && \
-	./configure --prefix=$(ICONV_INSTALL_DIR) && \
-	$(MAKE) && \
+	cd $(ICONV_SOURCE_DIR)
+	./configure --prefix=$(ICONV_INSTALL_DIR)
+	$(MAKE)
 	$(MAKE) install
 	
-	( \
-	if [ ! -e $(ICONV_INSTALL_DIR)/lib/pkgconfig ]; then \
-		mkdir -p $(ICONV_INSTALL_DIR)/lib/pkgconfig; \
-		echo 'prefix=$(ICONV_INSTALL_DIR)\n\
-exec_prefix=$${prefix}\n\
-libdir=$${exec_prefix}/lib\n\
-includedir=$${prefix}/include\n\
-\n\
-Name: iconv\n\
-Description: iconv library\n\
-Version: $(ICONV_VERSION)\n\
-Libs: -L$${libdir} -liconv -lcharset \n\
-Cflags: -I$${includedir}\n\
-' > $(ICONV_INSTALL_DIR)/lib/pkgconfig/iconv.pc; \
-	fi \
-	)
+	mkdir -p $(ICONV_INSTALL_DIR)/lib/pkgconfig
+	
+	cat << 'EOF' >> $(ICONV_INSTALL_DIR)/lib/pkgconfig/iconv.pc
+	prefix=$(ICONV_INSTALL_DIR)
+	exec_prefix=$${prefix}
+	libdir=$${exec_prefix}/lib
+	includedir=$${prefix}/include
+	
+	Name: iconv
+	Description: iconv library
+	Version: $(ICONV_VERSION)
+	Libs: -L$${libdir} -liconv -lcharset
+	Cflags: -I$${includedir}
+	EOF
 
 $(GETTEXT_ARCHIVE_NAME):
 	$(DL_CMD) -o $(GETTEXT_ARCHIVE_NAME) "https://ftp.gnu.org/pub/gnu/gettext/gettext-$(GETTEXT_VERSION).tar.xz"
 $(GETTEXT_SOURCE_DIR):$(GETTEXT_ARCHIVE_NAME)
 	mkdir -p $(GETTEXT_SOURCE_DIR)
-	tar -xzf $(GETTEXT_ARCHIVE_NAME) -C $(GETTEXT_SOURCE_DIR) --strip-components=1
+	tar -xf $(GETTEXT_ARCHIVE_NAME) -C $(GETTEXT_SOURCE_DIR) --strip-components=1
+.ONESHELL:
 $(GETTEXT_INSTALL_DIR): | $(GETTEXT_SOURCE_DIR)
 	mkdir -p $(GETTEXT_INSTALL_DIR)
 
-	cd $(GETTEXT_SOURCE_DIR) && \
-	./configure --prefix=$(GETTEXT_INSTALL_DIR) && \
-	$(MAKE) && \
+	cd $(GETTEXT_SOURCE_DIR)
+	./configure --prefix=$(GETTEXT_INSTALL_DIR) --disable-java --disable-native-java
+	$(MAKE)
 	$(MAKE) install
 
-	( \
-	if [ ! -e $(GETTEXT_INSTALL_DIR)/lib/pkgconfig ]; then \
-		mkdir -p $(GETTEXT_INSTALL_DIR)/lib/pkgconfig; \
-		echo 'prefix=$(GETTEXT_INSTALL_DIR)\n\
-exec_prefix=$${prefix}\n\
-libdir=$${exec_prefix}/lib\n\
-includedir=$${prefix}/include\n\
-\n\
-Name: gettext\n\
-Description: gettext library\n\
-Version: $(GETTEXT_VERSION)\n\
-Libs: -L$${libdir} -lintl -lasprintf -lgettextpo -ltextstyle \n\
-Cflags: -I$${includedir}\n\
-' > $(GETTEXT_INSTALL_DIR)/lib/pkgconfig/gettext.pc; \
-	fi \
-	)
+	mkdir -p $(GETTEXT_INSTALL_DIR)/lib/pkgconfig
+	
+	cat << 'EOF' > $(GETTEXT_INSTALL_DIR)/lib/pkgconfig/gettext.pc
+	prefix=$(GETTEXT_INSTALL_DIR)
+	exec_prefix=$${prefix}
+	libdir=$${exec_prefix}/lib
+	includedir=$${prefix}/include
+	
+	Name: gettext
+	Description: gettext library
+	Version: $(GETTEXT_VERSION)
+	Libs: -L$${libdir} -lintl -lasprintf -lgettextpo -ltextstyle
+	Cflags: -I$${includedir}
+	EOF
 
 $(ICU_ARCHIVE_NAME):
 	$(DL_CMD) -o $(ICU_ARCHIVE_NAME) "https://github.com/unicode-org/icu/releases/download/release-$(subst .,-,$(ICU_VERSION))/icu4c-$(subst .,_,$(ICU_VERSION))-src.tgz"
@@ -228,6 +226,8 @@ $(NCURSES_INSTALL_DIR): | $(NCURSES_SOURCE_DIR)
 	./configure --prefix=$(NCURSES_INSTALL_DIR) --with-shared --without-normal --without-debug --with-termlib --enable-widec
 	$(MAKE)
 	$(MAKE) install
+
+	ln -s $(NCURSES_INSTALL_DIR)/lib/libtinfow.so.6 $(NCURSES_INSTALL_DIR)/lib/libtinfo.so.6
 
 	# no -lpanelw -> causes terminal misconfiguration in python configure
 
@@ -308,9 +308,13 @@ $(PYTHON_INSTALL_DIR):$(ALL_DEP_INSTALL_DIRS) | $(PYTHON_SOURCE_DIR)
 	# + also apply several optimizations to improve runtime performance (no --enable-optimizations flag \
 	# because pgo generates wrong raw profile data, error: "version=8 instead of expected 9" ?!)
 
+	echo $(PKGNAMES)
+	cat << 'EOF' > compilepython.sh
 	export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_PATHS)
-	export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs $(PKGNAMES) ) $(LDFLAGS) "
-	export CPPFLAGS=" $$(pkg-config --cflags $(PKGNAMES) ) $(CPPFLAGS) "
+	export LDFLAGS=" -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib -Wl,-rpath,$(OPENSSL_INSTALL_DIR)/lib64 $$(pkg-config --libs $(PKGNAMES) ) $${LDFLAGS} "
+	export CPPFLAGS=" $$(pkg-config --cflags $(PKGNAMES) ) $${CPPFLAGS}"
+	echo $${LDFLAGS}
+	echo $${CPPFLAGS}
 	cd $(PYTHON_SOURCE_DIR)
 	./configure \
 		--with-openssl="$(OPENSSL_INSTALL_DIR)" \
@@ -320,10 +324,15 @@ $(PYTHON_INSTALL_DIR):$(ALL_DEP_INSTALL_DIRS) | $(PYTHON_SOURCE_DIR)
 		--with-icu="$(ICU_INSTALL_DIR)" \
 		--prefix="$(PYTHON_INSTALL_DIR)" \
 		--with-lto --with-computed-gotos \
+		--with-curses \
 		--with-ensurepip $(PYTHON_CONFIGURE_FLAGS)
 	$(MAKE)
 	# -j1 altinstall -> avoid a race condition with duplicate mkdir
 	$(MAKE) -j1 altinstall
+	EOF
+	cat compilepython.sh
+	bash compilepython.sh
+	rm compilepython.sh
 
 .ONESHELL:
 $(PYTHON_INSTALL_DIR)/bin/python3: $(PYTHON_INSTALL_DIR)
