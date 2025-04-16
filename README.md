@@ -11,6 +11,7 @@ files:
 - _virtualbox.md_: some notes on virtualbox usage.
 - _wezterm.lua_: basic [wezterm](https://wezfurlong.org/wezterm/index.html) terminal emulator config file that just increases font size.
 - _rpi5-build-linux6.13rt.sh_: build script to compile the 6.13 linux kernel with realtime scheduling enabled for the rasberry pi 5 (rpi5)
+- _micro_settings.json_: settings for [micro](https://micro-editor.github.io/), primarily enabling copy/paste to terminal clipboard
 
 ## python
 
