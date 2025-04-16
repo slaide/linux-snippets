@@ -1,0 +1,12 @@
+/// zellij config.kdl
+
+// enter dedicated zellij control mode only on demand.
+default_mode "locked"
+
+// or whatever your system equivalent is (which is documented by zellij).
+// this avoids the ignored copy_on_select flag, which is considered 'true' always, seemingly. 
+copy_command "pbcopy"
+
+// disable copy on select, because it messes with select-and-overwrite.
+// note: seemingly ignored. see copy_command for workaround.
+copy_on_select false
