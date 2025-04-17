@@ -10,3 +10,7 @@ copy_command "pbcopy"
 // disable copy on select, because it messes with select-and-overwrite.
 // note: seemingly ignored. see copy_command for workaround.
 copy_on_select false
+
+// explicitely set scrollback editor program (absolute path).
+// e.g. used to copy output from a previous command. (scrollback edit opens whole scrollback buffer with this editor)
+scrollback_editor "/opt/homebrew/bin/micro"
