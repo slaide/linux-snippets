@@ -64,4 +64,4 @@ sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
 
 echo "add the kernel=kernel_2712 line /boot/firmware/config.txt (or change if there already is a kernel= line)"
 
-echo "done. reboot to apply. after reboot, run `$ sudo SKIP_KERNEL=1 PRUNE_MODULES=1 rpi-update rpi-6.14.y` to update the firmware "
+echo "done. reboot to apply. after reboot, run \`\$ sudo SKIP_KERNEL=1 PRUNE_MODULES=1 rpi-update rpi-6.14.y\` to update the firmware "
