@@ -1,0 +1,9 @@
+[
+    {
+        "context": "Editor",
+        "bindings": {
+            "ctrl-shift-up": "editor::AddSelectionAbove", // Insert Cursor Above
+            "ctrl-shift-down": "editor::AddSelectionBelow", // Insert Cursor Below
+		}
+	}
+]
