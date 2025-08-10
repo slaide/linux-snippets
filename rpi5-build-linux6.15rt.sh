@@ -9,22 +9,22 @@ set -e
 # (with raspi-config in display settings)
 # because x11 has lower latency
 
-mkdir linux-6.14-rt
-cd linux-6.14-rt
+mkdir linux-6.15-rt
+cd linux-6.15-rt
 
-git clone -b rpi-6.14.y --depth=1 https://github.com/raspberrypi/linux
+git clone -b rpi-6.15.y --depth=1 https://github.com/raspberrypi/linux
 
 sudo apt install bc bison flex libssl-dev make libncurses5-dev
 
 # change from the post: non-rc patch (pick latest available version)
 # use /older/ to ensure the version here is always fetchable (the 6.y/patch*.gz path only allows the latest, which may change)
-curl -OL https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.14/older/patch-6.14-rt3.patch.gz
-gzip -d patch-6.14-rt3.patch.gz
+curl -OL https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.15/older/patch-6.15-rt2.patch.gz
+gzip -d patch-6.15-rt2.patch.gz
 
 # cd into the repo
 cd linux
 
-patch -p1 < ../patch-6.14-rt3.patch
+patch -p1 < ../patch-6.15-rt2.patch
 
 make bcm2712_defconfig
 
@@ -64,4 +64,4 @@ sudo cp arch/arm64/boot/dts/overlays/README /boot/firmware/overlays/
 
 echo "add the kernel=kernel_2712 line /boot/firmware/config.txt (or change if there already is a kernel= line)"
 
-echo "done. reboot to apply. after reboot, run `$ sudo SKIP_KERNEL=1 PRUNE_MODULES=1 rpi-update rpi-6.14.y` to update the firmware "
+echo "done. reboot to apply. after reboot, run \`\$ sudo SKIP_KERNEL=1 PRUNE_MODULES=1 rpi-update rpi-6.15.y\` to update the firmware "
