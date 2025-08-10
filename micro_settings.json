@@ -1,3 +1,5 @@
 {
+    "autoindent": false,
+    "softwrap": true,
     "clipboard": "terminal"
 }
