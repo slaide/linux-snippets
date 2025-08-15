@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# helper script to display tmux shortcuts in open tab when opening tmux (via this script)
-
 SESSION_NAME=${1:-main}
 
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
@@ -19,6 +17,8 @@ C-b c        new window/tab
 C-b n        next window
 C-b p        previous window
 C-b ,        rename window
+C-b <        move window left
+C-b >        move window right
 C-b s        list/switch sessions
 C-b d        detach from session
 C-b $        rename current session
