@@ -25,6 +25,7 @@ max_len=0
 # Collect runner commands (r-* scripts)
 for f in "$SCRIPTS_DIR"/r-*.sh; do
     [ -f "$f" ] || continue
+    [[ "$f" == */.ignore/* ]] && continue
     name="$(basename "$f" .sh)"
     if grep -q 'R_SCRIPT_GETHELP' "$f" 2>/dev/null; then
         [ -x "$f" ] || chmod +x "$f"
@@ -43,6 +44,7 @@ done
 # Collect other scripts
 for f in "$SCRIPTS_DIR"/*.sh; do
     [ -f "$f" ] || continue
+    [[ "$f" == */.ignore/* ]] && continue
     name="$(basename "$f" .sh)"
     [ "$name" = "r" ] && continue
     [[ "$name" == r-* ]] && continue

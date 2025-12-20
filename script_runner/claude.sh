@@ -5,4 +5,4 @@ if [ -n "$R_SCRIPT_GETHELP" ]; then
     exit 0
 fi
 
-exec claude --dangerously-skip-permissions
+exec bun run claude --dangerously-skip-permissions

@@ -9,6 +9,7 @@ sudo apt update
 sudo apt upgrade -fy
 sudo apt autoremove -y
 
-flatpak update
+flatpak update -y
 
-sudo npm update -g @anthropic-ai/claude-code
+bun upgrade
+bun update -g @anthropic-ai/claude-code
