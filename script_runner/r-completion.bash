@@ -2,8 +2,9 @@
 # Source this in your .bashrc: source /path/to/r-completion.bash
 
 _r_completion() {
-    local cur prev words cword
-    _init_completion || return
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local cword="$COMP_CWORD"
 
     local scripts_dir="$(dirname "$(realpath "$(which r 2>/dev/null || echo /home/patrick/code/linux-snippets/script_runner/r.sh)")")"
 
@@ -29,16 +30,16 @@ _r_completion() {
     fi
 
     # Second argument onwards: check if the script has its own completion
-    local cmd="${words[1]}"
+    local cmd="${COMP_WORDS[1]}"
     local script_path="$scripts_dir/r-${cmd}.sh"
     [ -f "$script_path" ] || script_path="$scripts_dir/${cmd}.sh"
 
     if [ -f "$script_path" ] && grep -q 'R_SCRIPT_COMPLETE' "$script_path" 2>/dev/null; then
         # Script provides its own completion
-        COMPREPLY=($(R_SCRIPT_COMPLETE=1 "$script_path" "$cur" "$prev" "${words[@]}"))
+        COMPREPLY=($(R_SCRIPT_COMPLETE=1 "$script_path" "$cur" "$prev" "${COMP_WORDS[@]}"))
     else
         # Default to file completion
-        _filedir
+        COMPREPLY=($(compgen -f -- "$cur"))
     fi
 }
 
