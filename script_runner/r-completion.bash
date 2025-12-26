@@ -36,10 +36,10 @@ _r_completion() {
 
     if [ -f "$script_path" ] && grep -q 'R_SCRIPT_COMPLETE' "$script_path" 2>/dev/null; then
         # Script provides its own completion
-        COMPREPLY=($(R_SCRIPT_COMPLETE=1 "$script_path" "$cur" "$prev" "${COMP_WORDS[@]}"))
+        mapfile -t COMPREPLY < <(R_SCRIPT_COMPLETE=1 "$script_path" "$cur" "$prev" "${COMP_WORDS[@]}")
     else
         # Default to file completion
-        COMPREPLY=($(compgen -f -- "$cur"))
+        mapfile -t COMPREPLY < <(compgen -f -- "$cur")
     fi
 }
 
