@@ -7,8 +7,8 @@ fi
 
 # Bash completion function
 if [ -n "$R_SCRIPT_COMPLETE" ]; then
-    # Complete with archive files
-    compgen -f -X '!*.@(zip|7z|rar|tar.gz|tgz|tar.bz2|tar.xz|tar)' -- "$2" 2>/dev/null
+    # $1 is the current word being completed
+    compgen -f -- "$1" | grep -E '\.(zip|7z|rar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|tar)$' || true
     exit 0
 fi
 
