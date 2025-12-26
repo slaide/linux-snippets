@@ -7,8 +7,9 @@ fi
 
 # Bash completion function
 if [ -n "$R_SCRIPT_COMPLETE" ]; then
-    # $1 is the current word being completed
-    compgen -f -- "$1" | grep -E '\.(zip|7z|rar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|tar)$' | while read -r f; do printf '%q\n' "$f"; done
+    # $1 is the current word being completed (unescape backslash-space)
+    cur="${1//\\ / }"
+    compgen -f -- "$cur" | grep -E '\.(zip|7z|rar|tar\.gz|tgz|tar\.bz2|tbz2|tar\.xz|txz|tar)$' | while read -r f; do printf '%q\n' "$f"; done
     exit 0
 fi
 
