@@ -60,7 +60,7 @@ case "${archive,,}" in
         needs_password=true
         ;;
     *.7z)
-        list_cmd() { 7z l -slt "$1" | grep "^Path = " | cut -d' ' -f3-; }
+        list_cmd() { 7z l -slt "$1" | grep "^Path = " | tail -n +2 | cut -d' ' -f3-; }
         extract_cmd() { 7z x -p"$password" -y "$1"; }
         needs_password=true
         ;;
@@ -71,10 +71,13 @@ case "${archive,,}" in
         ;;
 esac
 
-# Security check: scan archive listing for path traversal
-echo "Checking archive contents..."
+# Get archive listing and display contents
+echo "Archive contents:"
 listing=$(list_cmd "$archive" 2>/dev/null)
+echo "$listing" | sed 's/^/  /'
+echo
 
+# Security check: scan archive listing for path traversal
 if echo "$listing" | grep -qE '(^|/)\.\.(/|$)'; then
     echo "Error: Archive contains path traversal (../) - refusing to extract." >&2
     exit 1
