@@ -12,4 +12,4 @@ sudo apt autoremove -y
 flatpak update -y
 
 bun upgrade
-bun update -g @anthropic-ai/claude-code
+sudo npm i -g @openai/codex
