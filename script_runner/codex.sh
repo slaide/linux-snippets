@@ -5,4 +5,4 @@ if [ -n "$R_SCRIPT_GETHELP" ]; then
     exit 0
 fi
 
-codex --dangerously-bypass-approvals-and-sandbox
+codex --yolo
